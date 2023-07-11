@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 # @Time : 2023/6/20 18:28
 import sys
+from time import sleep
+
 import pygame
 
 from settings import Settings
+from game_stats import GameStats
 from ship import Ship
 from bullet import Bullet
 from alien import Alien
@@ -27,6 +30,9 @@ class AlienInvasion:
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))  # 设置主屏幕窗口
 
         pygame.display.set_caption("Alien Invasion")  # 设置窗口的标题，即游戏名称
+
+        # 创建一个用于存储游戏统计信息的实例
+        self.stats=GameStats(self)
 
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
@@ -159,6 +165,23 @@ class AlienInvasion:
         for alien in self.aliens.sprites():
             alien.rect.y+=self.settings.fleet_drop_speed
         self.settings.fleet_direction*=-1
+
+    def _ship_hit(self):
+        '''响应飞创被外星人撞到'''
+
+        # 将ships_left减一
+        self.stats.ships_left-=1
+
+        # 清空余下的外星人和子弹
+        self.aliens.empty()
+        self.bullets.empty()
+
+        # 创建一群新的外星人，并将飞船放到屏幕底端中央
+        self._create_fleet()
+        self.ship.center_ship()
+
+        # 暂停
+        sleep(0.5)
 
     def _update_screen(self):
         '''
